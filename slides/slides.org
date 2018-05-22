@@ -2,14 +2,332 @@
 #+AUTHOR: Sergio Conde Gómez
 #+EMAIL: skgsergio@gmail.com
 #+DATE: Mayo 2018
+
 #+STARTUP: showall
+
 #+OPTIONS: toc:nil num:nil timestamp:nil
+#+OPTIONS: reveal_title_slide:nil reveal_slide_number:c reveal_overview:t
 #+OPTIONS: reveal_center:nil reveal_progress:t reveal_history:t
 #+OPTIONS: reveal_control:t reveal_rolling_links:nil reveal_keyboard:t
-#+OPTIONS: reveal_overview:t
-#+REVEAL_MARGIN: 0.1
-#+REVEAL_MIN_SCALE: 0.5
-#+REVEAL_MAX_SCALE: 2.5
+
+#+REVEAL_THEME: black
 #+REVEAL_TRANS: linear
 #+REVEAL_SPEED: default
-#+REVEAL_THEME: black
+
+#+BEGIN_EXPORT html
+<style>
+  .reveal section img { border: 0; box-shadow: none; background: none; }
+</style>
+#+END_EXPORT
+
+
+* MicroPython
+
+  EXISTE VIDA MÁS ALLÁ DE ARDUINO
+
+  (Y ESTÁ LLENA DE SERPIENTES)
+
+  #+ATTR_HTML: :height 250px
+  [[./img/micropython.png]]
+
+
+* sconde@acm ~ $ whoami
+
+  * Sergio Conde Gómez
+  * Site Reliability Engineer (SRE) @ [[https://carto.com][CARTO]]
+  * Contacto:
+    * Twitter: [[https://twitter.com/skgsergio][@skgsergio]]
+    * Telegram: [[http://telegram.me/skgsergio][@skgsergio]]
+    * Email: [[mailto:skgsergio@gmail.com][skgsergio@gmail.com]]
+
+
+* ¿De qué va esta charla?
+
+  * ¿Qué es MicroPython?
+    * Breve historia
+    * ¿Qué no es MicroPython?
+    * Hardware soportado
+  * PIP y MicroPython (=upip=)
+  * Nociones básicas y ejemplos
+  * Code Emitters
+  * Inline Assembler
+
+
+** Primero unas preguntas
+
+   * ¿Has programado alguna vez para un microcontrolador?
+   * ¿En C /a pelo/? ¿Con Arduino?
+   * ¿Has programado alguna vez en Python?
+
+
+* ¿Qué es MicroPython?
+
+  #+BEGIN_QUOTE
+  MicroPython is a lean and efficient implementation of the Python 3 programming
+  language that includes a small subset of the Python standard library and is
+  optimised to run on microcontrollers and in constrained environments.
+
+  -- https://micropython.org/
+  #+END_QUOTE
+
+
+** Breve historia
+
+   * Damien George
+   * OpenSource desde el primer día
+     * Licencia MIT
+     * Escrito en C
+     * Compatible con Python 3.4
+   * Kickstarter (13/11/2013 - 13/12/2013)
+     * 1.931 patrocinadores
+     * 97.803 £
+     * https://git.io/vp9Za
+
+
+** ¿Qué no es MicroPython?
+
+   * No es una implementación 100% compatible con CPython 3
+   * No es una implementación del 100% de la biblioteca estándar de Python 3
+
+   [[http://docs.micropython.org/en/latest/unix/genrst/index.html][MicroPython differences from CPython]]
+
+
+** Hardware Soportado: PyBoard
+
+   * ARM: STM32F405RGT6 (Cortex-M4F) @ 168MHz
+   * RAM: 192K
+   * Flash: 1024K
+   * Slot MicroSD
+   * GPIO, SPI, I2C, ADC, DCA, UART, CAN
+
+
+** Hardware Soportado: ESP8266
+
+   * RISC: Tensilica Diamond Standard 106Micro @ 80/160MHz
+   * RAM: 80K (+32K para instrucciones, +32K para cache)
+   * Flash: 512K - 4M
+   * WiFi: IEEE 802.11 b/g/n
+   * GPIO, SPI, I2C, I2S, ADC, UART
+   * Actualizaciones OTA (Over-the-Air)
+
+
+** Hardware Soportado: ESP32
+
+   * RISC: Tensilica Xtensa LX6 (dual-core) @ 160/240MHz
+   * RAM: 520K
+   * Flash: 512K - 4M
+   * WiFi: IEEE 802.11 b/g/n
+   * Bluetooth: v4.2 BR/EDR + BLE
+   * Sensor de efecto Hall
+   * Crypto: RSA, SHA-2, ECC, RNG
+   * GPIO, SPI, I2C, I2S, ADC, PWM, CAN, UART, SDIO/eMMC
+   * Actualizaciones OTA (Over-the-Air)
+
+
+* PIP y MicroPython (=upip=)
+
+  * Paquetes alojados en PyPI, típicamente nombrados como =micropython-...=
+  * Puede ejecutarse desde el intérprete o desde linea de comandos (port =unix=)
+
+  #+BEGIN_SRC python
+  import upip
+  upip.install('micropython-am2320')
+  #+END_SRC
+
+  #+BEGIN_SRC bash
+  micropython -m upip install micropython-am2320
+  #+END_SRC
+
+
+* Nociones básicas y ejemplos
+
+  * Nociones básicas
+    * Pin
+    * PWM (Pulse-Width Modulation)
+    * Servo (PyBoard)
+    * I2C (Inter-Integrated Circuit)
+
+  * Ejemplos
+    * Sensor Ultrasonidos: HC-SR04
+    * PyBoard: Modo HID
+    * ESP8266 / ESP32: WiFi
+
+
+** Pin
+
+   #+BEGIN_SRC python
+from machine import Pin
+
+p = Pin(0, Pin.OUT, value=0)
+
+p.value(1)
+p.value(0)
+
+p.on()
+p.off()
+
+p2 = Pin(2, mode=Pin.IN, pull=Pin.PULL_UP)
+
+p2.irq(handler=lambda x: print(x.value()),
+       trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING)
+   #+END_SRC
+
+
+** PWM (Pulse-Width Modulation)
+
+   ESP8266 / ESP32:
+   #+BEGIN_SRC python
+from machine import Pin, PWM
+
+servo = PWM(Pin(4), freq=50)
+servo.duty(50)
+   #+END_SRC
+
+   PyBoard (Software PWM):
+   #+BEGIN_SRC python
+from pyb import Pin, Timer
+
+tim = Timer(2, freq=50)
+ch = tim.channel(1, Timer.PWM, pin=Pin('X1'))
+ch.pulse_width_percent(50)
+   #+END_SRC
+
+
+** Servo (PyBoard)
+
+   Servo tradicional:
+   #+BEGIN_SRC python
+from pyb import Servo
+
+servo = Servo(1)
+servo.angle(45)
+servo.angle(-45, 5000)
+   #+END_SRC
+
+   Servo de rotación continua:
+   #+BEGIN_SRC python
+from pyb import Servo
+
+servo = Servo(1)
+servo.speed(50)
+servo.speed(0, 5000)
+   #+END_SRC
+
+
+** I2C (Inter-Integrated Circuit)
+
+   #+BEGIN_SRC python
+import machine import Pin, I2C
+
+addr = 28
+reg_read = 5
+reg_write = 8
+
+i2c = I2C(scl=Pin(5), sda=Pin(4))
+i2c.scan()
+
+i2c.writeto_mem(addr, reg_write, b'\x00')
+print(i2c.readfrom_mem(addr, reg_read, 2))
+   #+END_SRC
+
+
+** Sensor Ultrasonidos: HC-SR04
+
+   #+BEGIN_SRC python
+import pyb
+from time import sleep_us
+from machine import Pin, time_pulse_us
+
+trigger = Pin(pyb.Pin.board.X3, mode=Pin.OUT, pull=None)
+trigger.off()
+
+echo = Pin(pyb.Pin.board.X4, mode=Pin.IN, pull=None)
+
+trigger.on()
+sleep_us(10)
+trigger.off()
+
+time_pulse = time_pulse_us(echo, 1)
+
+# Divide the duration of the pulse by 2 (round-trip) and then
+# divide it by 29 us/cm (speed of sound = ~340 m/s)
+dist = (time_pulse / 2) / 29  # cm
+   #+END_SRC
+
+
+** PyBoard: Modo HID
+
+   boot.py
+   #+INCLUDE: ../src/pyb-mouse/boot.py src python
+
+   main.py
+   #+INCLUDE: ../src/pyb-mouse/main.py src python
+
+
+** ESP8266 / ESP32: WiFi
+
+Conectar a un AP:
+   #+BEGIN_SRC python
+import network
+
+sta = network.WLAN(network.STA_IF)
+sta.active(True)
+sta.connect('ACM', 'PatataFrita')
+sta.ifconfig(('10.0.0.2', '255.255.255.0',
+              '10.0.0.1', '8.8.8.8'))
+   #+END_SRC
+
+Crear un AP:
+   #+BEGIN_SRC python
+import network
+
+ap = network.WLAN(network.AP_IF)
+ap.active(True)
+ap.config(essid='ACM', password='PatataFrita', channel=3,
+          authmode=network.AUTH_WPA2_PSK,
+          mac=b'\xC0\xC1\xD0\xFA\xBA\xDA')
+   #+END_SRC
+
+
+* Code Emitters
+
+  * /Precompilación/ a código nativo o a código nativo con tipos nativos
+  * Implementados como decoradores: =@micropython.native= y =@micropython.viper=
+
+  #+BEGIN_SRC python
+def test():
+    millis = pyb.millis
+    endTime = millis() + 10000
+    count = 0
+    while millis() < endTime:
+        count += 1
+    print("Count: ", count)
+  #+END_SRC
+
+
+* Inline Assembler
+
+  * Implementado como funciones wrapper de Python
+  * La función siempre sale con el valor de =r0=
+
+  #+BEGIN_SRC python
+@micropython.asm_thumb
+def asm_add(r0, r1):
+    add(r0, r0, r1)
+
+print(asm_add(1, 2))
+  #+END_SRC
+
+  [[http://docs.micropython.org/en/latest/pyboard/pyboard/tutorial/assembler.html#loops][Ejemplo más completo]]
+
+* ¿Preguntas?
+
+  * Slides:
+    * https://github.com/skgsergio/MicroPython-ACM-2018
+  * Contacto:
+    * Twitter: [[https://twitter.com/skgsergio][@skgsergio]]
+    * Telegram: [[http://telegram.me/skgsergio][@skgsergio]]
+    * Email: [[mailto:skgsergio@gmail.com][skgsergio@gmail.com]]
+  * Quejas: =echo "Tu queja" > /dev/null=
+
+  ¡Muchas gracias a todos por venir!

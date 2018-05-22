@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>MicroPython</title>
+<meta name="author" content="(Sergio Conde Gómez)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="./reveal.js/css/reveal.css"/>
+
+<link rel="stylesheet" href="./reveal.js/css/theme/black.css" id="theme"/>
+
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = './reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<style>
+  .reveal section img { border: 0; box-shadow: none; background: none; }
+</style>
+
+
+<section>
+<section id="slide-orgda70143">
+<h2 id="orgda70143">MicroPython</h2>
+<p>
+EXISTE VIDA MÁS ALLÁ DE ARDUINO
+</p>
+
+<p>
+(Y ESTÁ LLENA DE SERPIENTES)
+</p>
+
+
+<div class="figure">
+<p><img src="./img/micropython.png" alt="micropython.png" height="250px" />
+</p>
+</div>
+
+
+</section>
+</section>
+<section>
+<section id="slide-org06f05b5">
+<h2 id="org06f05b5">sconde@acm ~ $ whoami</h2>
+<ul>
+<li>Sergio Conde Gómez</li>
+<li>Site Reliability Engineer (SRE) @ <a href="https://carto.com">CARTO</a></li>
+<li>Contacto:
+<ul>
+<li>Twitter: <a href="https://twitter.com/skgsergio">@skgsergio</a></li>
+<li>Telegram: <a href="http://telegram.me/skgsergio">@skgsergio</a></li>
+<li>Email: <a href="mailto:skgsergio@gmail.com">skgsergio@gmail.com</a></li>
+
+</ul></li>
+
+</ul>
+
+
+</section>
+</section>
+<section>
+<section id="slide-org54b583d">
+<h2 id="org54b583d">¿De qué va esta charla?</h2>
+<ul>
+<li>¿Qué es MicroPython?
+<ul>
+<li>Breve historia</li>
+<li>¿Qué no es MicroPython?</li>
+<li>Hardware soportado</li>
+
+</ul></li>
+<li>PIP y MicroPython (<code>upip</code>)</li>
+<li>Nociones básicas y ejemplos</li>
+<li>Code Emitters</li>
+<li>Inline Assembler</li>
+
+</ul>
+
+
+</section>
+<section id="slide-orgf15a449">
+<h3 id="orgf15a449">Primero unas preguntas</h3>
+<ul>
+<li>¿Has programado alguna vez para un microcontrolador?</li>
+<li>¿En C <i>a pelo</i>? ¿Con Arduino?</li>
+<li>¿Has programado alguna vez en Python?</li>
+
+</ul>
+
+
+</section>
+</section>
+<section>
+<section id="slide-org2557a8d">
+<h2 id="org2557a8d">¿Qué es MicroPython?</h2>
+<blockquote nil>
+<p>
+MicroPython is a lean and efficient implementation of the Python 3 programming
+language that includes a small subset of the Python standard library and is
+optimised to run on microcontrollers and in constrained environments.
+</p>
+
+<p>
+&#x2013; <a href="https://micropython.org/">https://micropython.org/</a>
+</p>
+</blockquote>
+
+
+</section>
+<section id="slide-orgea5facf">
+<h3 id="orgea5facf">Breve historia</h3>
+<ul>
+<li>Damien George</li>
+<li>OpenSource desde el primer día
+<ul>
+<li>Licencia MIT</li>
+<li>Escrito en C</li>
+<li>Compatible con Python 3.4</li>
+
+</ul></li>
+<li>Kickstarter (13/11/2013 - 13/12/2013)
+<ul>
+<li>1.931 patrocinadores</li>
+<li>97.803 £</li>
+<li><a href="https://git.io/vp9Za">https://git.io/vp9Za</a></li>
+
+</ul></li>
+
+</ul>
+
+
+</section>
+<section id="slide-orgb8f4be7">
+<h3 id="orgb8f4be7">¿Qué no es MicroPython?</h3>
+<ul>
+<li>No es una implementación 100% compatible con CPython 3</li>
+<li>No es una implementación del 100% de la biblioteca estándar de Python 3</li>
+
+</ul>
+
+<p>
+<a href="http://docs.micropython.org/en/latest/unix/genrst/index.html">MicroPython differences from CPython</a>
+</p>
+
+
+</section>
+<section id="slide-org50ce59e">
+<h3 id="org50ce59e">Hardware Soportado: PyBoard</h3>
+<ul>
+<li>ARM: STM32F405RGT6 (Cortex-M4F) @ 168MHz</li>
+<li>RAM: 192K</li>
+<li>Flash: 1024K</li>
+<li>Slot MicroSD</li>
+<li>GPIO, SPI, I2C, ADC, DCA, UART, CAN</li>
+
+</ul>
+
+
+</section>
+<section id="slide-orgbefed44">
+<h3 id="orgbefed44">Hardware Soportado: ESP8266</h3>
+<ul>
+<li>RISC: Tensilica Diamond Standard 106Micro @ 80/160MHz</li>
+<li>RAM: 80K (+32K para instrucciones, +32K para cache)</li>
+<li>Flash: 512K - 4M</li>
+<li>WiFi: IEEE 802.11 b/g/n</li>
+<li>GPIO, SPI, I2C, I2S, ADC, UART</li>
+<li>Actualizaciones OTA (Over-the-Air)</li>
+
+</ul>
+
+
+</section>
+<section id="slide-orgcb750e3">
+<h3 id="orgcb750e3">Hardware Soportado: ESP32</h3>
+<ul>
+<li>RISC: Tensilica Xtensa LX6 (dual-core) @ 160/240MHz</li>
+<li>RAM: 520K</li>
+<li>Flash: 512K - 4M</li>
+<li>WiFi: IEEE 802.11 b/g/n</li>
+<li>Bluetooth: v4.2 BR/EDR + BLE</li>
+<li>Sensor de efecto Hall</li>
+<li>Crypto: RSA, SHA-2, ECC, RNG</li>
+<li>GPIO, SPI, I2C, I2S, ADC, PWM, CAN, UART, SDIO/eMMC</li>
+<li>Actualizaciones OTA (Over-the-Air)</li>
+
+</ul>
+
+
+</section>
+</section>
+<section>
+<section id="slide-org69ecd6a">
+<h2 id="org69ecd6a">PIP y MicroPython (<code>upip</code>)</h2>
+<ul>
+<li>Paquetes alojados en PyPI, típicamente nombrados como <code>micropython-...</code></li>
+<li>Puede ejecutarse desde el intérprete o desde linea de comandos (port <code>unix</code>)</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">import</span> upip
+upip.install(<span style="color: #b5bd68;">'micropython-am2320'</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre  class="src src-bash">micropython -m upip install micropython-am2320
+</pre>
+</div>
+
+
+</section>
+</section>
+<section>
+<section id="slide-org29768f2">
+<h2 id="org29768f2">Nociones básicas y ejemplos</h2>
+<ul>
+<li>Nociones básicas
+<ul>
+<li>Pin</li>
+<li>PWM (Pulse-Width Modulation)</li>
+<li>Servo (PyBoard)</li>
+<li>I2C (Inter-Integrated Circuit)</li>
+
+</ul></li>
+
+<li>Ejemplos
+<ul>
+<li>Sensor Ultrasonidos: HC-SR04</li>
+<li>PyBoard: Modo HID</li>
+<li>ESP8266 / ESP32: WiFi</li>
+
+</ul></li>
+
+</ul>
+
+
+</section>
+<section id="slide-org24a9da4">
+<h3 id="org24a9da4">Pin</h3>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">from</span> machine <span style="color: #b294bb;">import</span> Pin
+
+<span style="color: #cc6666;">p</span> = Pin(0, Pin.OUT, value=0)
+
+p.value(1)
+p.value(0)
+
+p.on()
+p.off()
+
+<span style="color: #cc6666;">p2</span> = Pin(2, mode=Pin.IN, pull=Pin.PULL_UP)
+
+p2.irq(handler=<span style="color: #b294bb;">lambda</span> x: <span style="color: #b294bb;">print</span>(x.value()),
+       trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING)
+</pre>
+</div>
+
+
+</section>
+<section id="slide-orgc92c4c2">
+<h3 id="orgc92c4c2">PWM (Pulse-Width Modulation)</h3>
+<p>
+ESP8266 / ESP32:
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">from</span> machine <span style="color: #b294bb;">import</span> Pin, PWM
+
+<span style="color: #cc6666;">servo</span> = PWM(Pin(4), freq=50)
+servo.duty(50)
+</pre>
+</div>
+
+<p>
+PyBoard (Software PWM):
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">from</span> pyb <span style="color: #b294bb;">import</span> Pin, Timer
+
+<span style="color: #cc6666;">tim</span> = Timer(2, freq=50)
+<span style="color: #cc6666;">ch</span> = tim.channel(1, Timer.PWM, pin=Pin(<span style="color: #b5bd68;">'X1'</span>))
+ch.pulse_width_percent(50)
+</pre>
+</div>
+
+
+</section>
+<section id="slide-org14affee">
+<h3 id="org14affee">Servo (PyBoard)</h3>
+<p>
+Servo tradicional:
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">from</span> pyb <span style="color: #b294bb;">import</span> Servo
+
+<span style="color: #cc6666;">servo</span> = Servo(1)
+servo.angle(45)
+servo.angle(-45, 5000)
+</pre>
+</div>
+
+<p>
+Servo de rotación continua:
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">from</span> pyb <span style="color: #b294bb;">import</span> Servo
+
+<span style="color: #cc6666;">servo</span> = Servo(1)
+servo.speed(50)
+servo.speed(0, 5000)
+</pre>
+</div>
+
+
+</section>
+<section id="slide-org6c3f68a">
+<h3 id="org6c3f68a">I2C (Inter-Integrated Circuit)</h3>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">import</span> machine <span style="color: #b294bb;">import</span> Pin, I2C
+
+<span style="color: #cc6666;">addr</span> = 28
+<span style="color: #cc6666;">reg_read</span> = 5
+<span style="color: #cc6666;">reg_write</span> = 8
+
+<span style="color: #cc6666;">i2c</span> = I2C(scl=Pin(5), sda=Pin(4))
+i2c.scan()
+
+i2c.writeto_mem(addr, reg_write, b<span style="color: #b5bd68;">'\x00'</span>)
+<span style="color: #b294bb;">print</span>(i2c.readfrom_mem(addr, reg_read, 2))
+</pre>
+</div>
+
+
+</section>
+<section id="slide-orge4285d9">
+<h3 id="orge4285d9">Sensor Ultrasonidos: HC-SR04</h3>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">import</span> pyb
+<span style="color: #b294bb;">from</span> time <span style="color: #b294bb;">import</span> sleep_us
+<span style="color: #b294bb;">from</span> machine <span style="color: #b294bb;">import</span> Pin, time_pulse_us
+
+<span style="color: #cc6666;">trigger</span> = Pin(pyb.Pin.board.X3, mode=Pin.OUT, pull=<span style="color: #de935f;">None</span>)
+trigger.off()
+
+<span style="color: #cc6666;">echo</span> = Pin(pyb.Pin.board.X4, mode=Pin.IN, pull=<span style="color: #de935f;">None</span>)
+
+trigger.on()
+sleep_us(10)
+trigger.off()
+
+<span style="color: #cc6666;">time_pulse</span> = time_pulse_us(echo, 1)
+
+<span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Divide the duration of the pulse by 2 (round-trip) and then</span>
+<span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">divide it by 29 us/cm (speed of sound = ~340 m/s)</span>
+<span style="color: #cc6666;">dist</span> = (time_pulse / 2) / 29  <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">cm</span>
+</pre>
+</div>
+
+
+</section>
+<section id="slide-orgbe24672">
+<h3 id="orgbe24672">PyBoard: Modo HID</h3>
+<p>
+boot.py
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">import</span> pyb
+pyb.usb_mode(<span style="color: #b5bd68;">'VCP+HID'</span>)
+pyb.main(<span style="color: #b5bd68;">'main.py'</span>)
+</pre>
+</div>
+
+<p>
+main.py
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">import</span> pyb
+
+<span style="color: #cc6666;">switch</span> = pyb.Switch()
+<span style="color: #cc6666;">accel</span> = pyb.Accel()
+<span style="color: #cc6666;">hid</span> = pyb.USB_HID()
+
+<span style="color: #b294bb;">while</span> <span style="color: #b294bb;">not</span> switch():
+    hid.send((0, accel.x(), accel.y(), 0))
+    pyb.delay(20)
+</pre>
+</div>
+
+
+</section>
+<section id="slide-orga8171c5">
+<h3 id="orga8171c5">ESP8266 / ESP32: WiFi</h3>
+<p>
+Conectar a un AP:
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">import</span> network
+
+<span style="color: #cc6666;">sta</span> = network.WLAN(network.STA_IF)
+sta.active(<span style="color: #de935f;">True</span>)
+sta.connect(<span style="color: #b5bd68;">'ACM'</span>, <span style="color: #b5bd68;">'PatataFrita'</span>)
+sta.ifconfig((<span style="color: #b5bd68;">'10.0.0.2'</span>, <span style="color: #b5bd68;">'255.255.255.0'</span>,
+              <span style="color: #b5bd68;">'10.0.0.1'</span>, <span style="color: #b5bd68;">'8.8.8.8'</span>))
+</pre>
+</div>
+
+<p>
+Crear un AP:
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">import</span> network
+
+<span style="color: #cc6666;">ap</span> = network.WLAN(network.AP_IF)
+ap.active(<span style="color: #de935f;">True</span>)
+ap.config(essid=<span style="color: #b5bd68;">'ACM'</span>, password=<span style="color: #b5bd68;">'PatataFrita'</span>, channel=3,
+          authmode=network.AUTH_WPA2_PSK,
+          mac=b<span style="color: #b5bd68;">'\xC0\xC1\xD0\xFA\xBA\xDA'</span>)
+</pre>
+</div>
+
+
+</section>
+</section>
+<section>
+<section id="slide-orge3641d9">
+<h2 id="orge3641d9">Code Emitters</h2>
+<ul>
+<li><i>Precompilación</i> a código nativo o a código nativo con tipos nativos</li>
+<li>Implementados como decoradores: <code>@micropython.native</code> y <code>@micropython.viper</code></li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b294bb;">def</span> <span style="color: #81a2be;">test</span>():
+    <span style="color: #cc6666;">millis</span> = pyb.millis
+    <span style="color: #cc6666;">endTime</span> = millis() + 10000
+    <span style="color: #cc6666;">count</span> = 0
+    <span style="color: #b294bb;">while</span> millis() &lt; endTime:
+        <span style="color: #cc6666;">count</span> += 1
+    <span style="color: #b294bb;">print</span>(<span style="color: #b5bd68;">"Count: "</span>, count)
+</pre>
+</div>
+
+
+</section>
+</section>
+<section>
+<section id="slide-org118d8ba">
+<h2 id="org118d8ba">Inline Assembler</h2>
+<ul>
+<li>Implementado como funciones wrapper de Python</li>
+<li>La función siempre sale con el valor de <code>r0</code></li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #f0c674;">@micropython.asm_thumb</span>
+<span style="color: #b294bb;">def</span> <span style="color: #81a2be;">asm_add</span>(r0, r1):
+    add(r0, r0, r1)
+
+<span style="color: #b294bb;">print</span>(asm_add(1, 2))
+</pre>
+</div>
+
+<p>
+<a href="http://docs.micropython.org/en/latest/pyboard/pyboard/tutorial/assembler.html#loops">Ejemplo más completo</a>
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-org2d2c40b">
+<h2 id="org2d2c40b">¿Preguntas?</h2>
+<ul>
+<li>Slides:
+<ul>
+<li><a href="https://github.com/skgsergio/MicroPython-ACM-2018">https://github.com/skgsergio/MicroPython-ACM-2018</a></li>
+
+</ul></li>
+<li>Contacto:
+<ul>
+<li>Twitter: <a href="https://twitter.com/skgsergio">@skgsergio</a></li>
+<li>Telegram: <a href="http://telegram.me/skgsergio">@skgsergio</a></li>
+<li>Email: <a href="mailto:skgsergio@gmail.com">skgsergio@gmail.com</a></li>
+
+</ul></li>
+<li>Quejas: <code>echo "Tu queja" &gt; /dev/null</code></li>
+
+</ul>
+
+<p>
+¡Muchas gracias a todos por venir!
+</p>
+</section>
+</section>
+</div>
+</div>
+<script src="./reveal.js/lib/js/head.min.js"></script>
+<script src="./reveal.js/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: true,
+center: false,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: './reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: './reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: './reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: './reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: './reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>
